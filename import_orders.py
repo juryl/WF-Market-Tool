@@ -5,10 +5,12 @@ import pandas as pd
 def import_orders(sess):
     buy_orders, sell_orders = wm.orders.get_current_orders(sess)
 
-    clean_buy_orders = pd.DataFrame(columns=("ID", "Price", "Order Type", "Item ID", "Item Name", "Mod Rank", "Active"))
+    # Try import existing data to avoid overwriting active orders. If not there create entirely new DF.
+    try: clean_buy_orders = pd.read_csv("buy_orders.csv")
+    except: clean_buy_orders = pd.DataFrame(columns=("ID", "Price", "Order Type", "Item ID", "Item Name", "Mod Rank", "Active", "Min", "Max"))
 
     for x in range(len(buy_orders)):
-        item = [0,0,0,0,0,0,0]
+        item = [0,0,0,0,0,0,0,0,0]
         item[0]=(buy_orders[x].id)
         item[1]=(buy_orders[x].platinum)
         item[2]=(buy_orders[x].order_type)
@@ -31,7 +33,8 @@ def import_orders(sess):
 
 
 
-    clean_sell_orders = pd.read_csv("sell_orders.csv")
+    try: clean_sell_orders = pd.read_csv("sell_orders.csv")
+    except: clean_sell_orders = pd.DataFrame(columns=("ID", "Price", "Order Type", "Item ID", "Item Name", "Mod Rank", "Active", "Min", "Max"))
 #Extract Useful Information and construct list
     for x in range(len(sell_orders)):
         item = [0,0,0,0,0,0,0]
