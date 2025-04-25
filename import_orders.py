@@ -7,7 +7,7 @@ def import_orders(sess):
 
     # Try import existing data to avoid overwriting active orders. If not there create entirely new DF.
     try: clean_buy_orders = pd.read_csv("buy_orders.csv")
-    except: clean_buy_orders = pd.DataFrame(columns=("ID", "Price", "Order Type", "Item ID", "Item Name", "Mod Rank", "Active", "Min", "Max"))
+    except: clean_buy_orders = pd.DataFrame(columns=("ID", "Price", "Order_Type", "Item_ID", "Item_Name", "Mod_Rank", "Active", "Min", "Max"))
 
     for x in range(len(buy_orders)):
         item = [0,0,0,0,0,0,0,0,0]
@@ -29,15 +29,33 @@ def import_orders(sess):
 
         #print(clean_buy_orders[x], "\n")
 
-    clean_buy_orders.to_csv("buy_orders.csv")
+    if len(clean_buy_orders)>len(buy_orders):
+        #Loop to scan list of names in clean orders against ones in buy orders to find and delete outdated order. 
+        count = 0
+        for x in range(len(clean_buy_orders)):
+            value_to_check = clean_buy_orders.at[x, "Item_Name"]
+            exists = any(Orderitem.item.url_name == value_to_check for Orderitem in buy_orders)
+            if exists == False: 
+                print("False")
+                try: clean_buy_orders.drop([x], inplace=True)
+                except: print("Drop failed")
+                count+=1
+
+        print(count)
+    
+        
+        
+
+
+    clean_buy_orders.to_csv("buy_orders.csv", index=False)
 
 
 
     try: clean_sell_orders = pd.read_csv("sell_orders.csv")
-    except: clean_sell_orders = pd.DataFrame(columns=("ID", "Price", "Order Type", "Item ID", "Item Name", "Mod Rank", "Active", "Min", "Max"))
+    except: clean_sell_orders = pd.DataFrame(columns=("ID", "Price", "Order_Type", "Item_ID", "Item_Name", "Mod_Rank", "Active", "Min", "Max"))
 #Extract Useful Information and construct list
     for x in range(len(sell_orders)):
-        item = [0,0,0,0,0,0,0]
+        item = [0,0,0,0,0,0,0,0,0]
         item[0]=(sell_orders[x].id)
         item[1]=(sell_orders[x].platinum)
         item[2]=(sell_orders[x].order_type)
@@ -54,7 +72,21 @@ def import_orders(sess):
         else:
             print("Duplicate Item")
 
-        #print(clean_buy_orders[x], "\n")
-    clean_sell_orders.to_csv("sell_orders.csv")
+    if len(clean_sell_orders)>len(sell_orders):
+            #Loop to scan list of names in clean orders against ones in buy orders to find and delete outdated order. 
+            count = 0
+            for x in range(len(clean_sell_orders)):
+                value_to_check = clean_sell_orders.at[x, "Item_Name"]
+                exists = any(Orderitem.item.url_name == value_to_check for Orderitem in sell_orders)
+                if exists == False: 
+                    print("False")
+                    try: clean_sell_orders.drop([x], inplace=True)
+                    except: print("Drop failed")
+                    count+=1
+
+            print(count)
+
+            #print(clean_buy_orders[x], "\n")
+    clean_sell_orders.to_csv("sell_orders.csv", index=False)
     return
 
