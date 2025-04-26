@@ -13,7 +13,7 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 sess = wm.auth.signin("Email", "Password")
 
 import_orders.import_orders(sess)
-active_buy_orders = get_active.get_active()
+active_buy_orders, active_sell_orders = get_active.get_active()
 count = 0
 while(True): #Use Keyboard Interrupt || Make better interrupt in future 
 
@@ -37,9 +37,31 @@ while(True): #Use Keyboard Interrupt || Make better interrupt in future
             updated_item=new_item)
 
         active_buy_orders.at[x, "Price"] = price
-        time.sleep(3)
+        time.sleep(1)
         #print("Order Updated","\n",updated_order, "\n\n")
     
+    for x in range(len(active_sell_orders)):
+        name = active_sell_orders.at[x,"Item_Name"] #take from active orders df
+        min = active_sell_orders.at[x,"Min"]
+        max = active_sell_orders.at[x,"Max"]
+        price = int(market_check.check_sell(name, min, max))
+
+
+        new_item = wm.orders.OrderUpdateItem(
+            platinum=price, 
+            quantity=1 , 
+            visible=True, 
+            rank=None,       #active_sell_orders.at[x, "Mod_Rank"], 
+            subtype=None)
+        updated_order = wm.orders.update_order(
+            sess=sess, 
+            order_id=active_sell_orders.at[x,"ID"],
+            updated_item=new_item)
+
+        active_sell_orders.at[x, "Price"] = price
+        time.sleep(1)
+        #print("Order Updated","\n",updated_order, "\n\n")
+
     print("\n","Cycle:", count)
     count += 1
     time.sleep(30)
